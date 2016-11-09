@@ -15,7 +15,7 @@
 # limitations under the License.
 from setuptools import setup, find_packages
 
-version = '0.1.0'
+version = '0.2.0'
 
 setup(name='livebridge-scribblelive',
       version=version,
@@ -45,5 +45,5 @@ See https://github.com/dpa-newslab/livebridge-scribblelive for more infos.
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-        "livebridge>=0.10.0"
+        "livebridge>=0.11.0"
       ])
