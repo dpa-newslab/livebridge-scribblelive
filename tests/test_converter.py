@@ -16,6 +16,7 @@
 import asynctest
 import os.path
 from livebridge_scribblelive import LiveblogScribbleliveConverter
+from livebridge.base import ConversionResult
 from tests import load_json
 
 class LiveblogScribbleliveConverterTest(asynctest.TestCase):
@@ -25,24 +26,24 @@ class LiveblogScribbleliveConverterTest(asynctest.TestCase):
 
     async def test_simple_conversion(self):
         post = load_json('post_to_convert.json')
-        res, images = await self.converter.convert(post)
-        assert len(res) >= 1
-        assert res == """<p><b>Text</b> mit ein parr <i>Formatierungen</i>. Und einem <a href="http://dpa.de">Link</a>. Und weiterer <s>Text</s>.<br></p><div><img src="http://newslab-liveblog-demo.s3-eu-central-1.amazonaws.com/aa7c892f1b1b7df17f635106e27c55d86a5c5b6144bebe2490f4ce14be671dd7" /><br>Gähn <i>(Mich)</i></div><p>Listen:<br><br><br> • Eins<br> • Zwei<br> • Drei<br><br><br> • u1<br> • u2<br> • u3<br></p><blockquote>Mit dem Wissen wächst der Zweifel.<br><br> • <i>Johann Wolfgang von Goethe</i></blockquote><p>Nochmal <i><b>abschließender</b></i> Text.</p><div id="_nnc0gyzwv">\n     <blockquote class="twitter-tweet">\n         <p>\nNeue Trendsportart? Der Kick auf dem Brett - Drohnen-Surfen! https://t.co/DjyYgHkYJ3 @dpa-NewsBlog | @noz_de\n         </p>&mdash; \n         dpa·live on Twitter (@dpa_live)\n         <a href="https://twitter.com/dpa_live/status/775991579676909568">https://twitter.com/dpa_live/status/775991579676909568</a>\n     </blockquote>\n</div>"""
-        await self.converter.remove_images(images)
+        conversion = await self.converter.convert(post)
+        assert len(conversion.content) >= 1
+        assert conversion.content == """<p><b>Text</b> mit ein parr <i>Formatierungen</i>. Und einem <a href="http://dpa.de">Link</a>. Und weiterer <s>Text</s>.<br></p><div><img src="http://newslab-liveblog-demo.s3-eu-central-1.amazonaws.com/aa7c892f1b1b7df17f635106e27c55d86a5c5b6144bebe2490f4ce14be671dd7" /><br>Gähn <i>(Mich)</i></div><p>Listen:<br><br><br> • Eins<br> • Zwei<br> • Drei<br><br><br> • u1<br> • u2<br> • u3<br></p><blockquote>Mit dem Wissen wächst der Zweifel.<br><br> • <i>Johann Wolfgang von Goethe</i></blockquote><p>Nochmal <i><b>abschließender</b></i> Text.</p><div id="_nnc0gyzwv">\n     <blockquote class="twitter-tweet">\n         <p>\nNeue Trendsportart? Der Kick auf dem Brett - Drohnen-Surfen! https://t.co/DjyYgHkYJ3 @dpa-NewsBlog | @noz_de\n         </p>&mdash; \n         dpa·live on Twitter (@dpa_live)\n         <a href="https://twitter.com/dpa_live/status/775991579676909568">https://twitter.com/dpa_live/status/775991579676909568</a>\n     </blockquote>\n</div>"""
+        await self.converter.remove_images(conversion.images)
 
     async def test_simple_conversion_failing(self):
         post = load_json('post_to_convert.json')
         # unknown embed
         post["groups"][1]["refs"] = [{"item": {"item_type" : "testtype"}, "type": "test"}]
-        res, images = await self.converter.convert(post)
-        assert res == ""
-        assert images == []
+        conversion = await self.converter.convert(post)
+        assert conversion.content == ""
+        assert conversion.images == []
 
         # let it fail with catched exception
         del post["groups"][1]["refs"]
-        res, images = await self.converter.convert(post)
-        assert res == ""
-        assert images == []
+        conversion = await self.converter.convert(post)
+        assert conversion.content == ""
+        assert conversion.images == []
 
     async def test_convert_image(self):
         post = load_json('post_to_convert.json')

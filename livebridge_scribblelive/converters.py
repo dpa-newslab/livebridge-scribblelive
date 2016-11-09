@@ -17,7 +17,7 @@ import bleach
 import logging
 import re
 
-from livebridge.base import BaseConverter
+from livebridge.base import BaseConverter, ConversionResult
 
 logger = logging.getLogger(__name__)
 
@@ -173,4 +173,4 @@ class LiveblogScribbleliveConverter(BaseConverter):
         except Exception as e:
             logger.error("Converting post failed.")
             logger.exception(e)
-        return content, images
+        return ConversionResult(content=content, images=images)
