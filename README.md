@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/dpa-newslab/livebridge-scribblelive.svg?branch=master)](https://travis-ci.org/dpa-newslab/livebridge-scribblelive)
 [![Coverage Status](https://coveralls.io/repos/github/dpa-newslab/livebridge-scribblelive/badge.svg?branch=master)](https://coveralls.io/github/dpa-newslab/livebridge-scribblelive?branch=master)
-
+[![PyPi](https://badge.fury.io/py/livebridge-scribblelive.svg)](https://pypi.python.org/pypi/livebridge-scribblelive)
 
 A [Scribblelive](http://scribblelive.com) plugin for [Livebridge](https://github.com/dpa-newslab/livebridge).
 
