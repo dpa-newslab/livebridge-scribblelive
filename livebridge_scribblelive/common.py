@@ -82,7 +82,6 @@ class ScribbleLiveClient(object):
                 else:
                     logger.error(await resp.text())
                     raise ScribbleLiveException("Scribblelive GET request [{}] failed with status {}".format(url, resp.status))
-        return {}
 
     async def _post(self, url, images=[], content="", *, auth=None, status=200):
         url = self._add_url_params(url)
@@ -102,7 +101,6 @@ class ScribbleLiveClient(object):
                 else:
                     logger.error(await resp.text())
                     raise ScribbleLiveException("Scribblelive POST request [{}] failed with status {}".format(url, resp.status))
-        return {}
 
     async def _put(self, url, content="", images=[], *, auth=None, status=200):
         url = self._add_url_params(url)
@@ -115,4 +113,3 @@ class ScribbleLiveClient(object):
                 else:
                     logger.error(await resp.text())
                     raise ScribbleLiveException("Scribblelive PUT request [{}] failed with status {}".format(url, resp.status))
-        return {}

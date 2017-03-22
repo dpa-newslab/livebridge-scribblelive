@@ -18,12 +18,32 @@ import aiohttp
 import time
 from livebridge.base import BaseTarget, BasePost, TargetResponse
 from livebridge_scribblelive import ScribbleLiveTarget
-from livebridge_scribblelive.common import ScribbleLiveClient
+from livebridge_scribblelive.common import ScribbleLiveClient, ScribbleLiveException
 from tests import load_json
+
+
+class TestResponse:
+
+    def __init__(self, url, data={}, status=200):
+        self.status = status
+        self.data = data
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        pass
+
+    async def json(self):
+        return self.data
+
+    async def text(self):
+        return repr(self.data)
 
 
 class TestPost(BasePost):
     pass
+
 
 class ScribbleLiveTargetTests(asynctest.TestCase):
 
@@ -163,6 +183,11 @@ class ScribbleLiveTargetTests(asynctest.TestCase):
             await self.client.handle_extras(post)
         self.client._handle_sticky.assert_called_once_with(post)
 
+    async def test_handle_none_extras(self):
+        post = asynctest.MagicMock()
+        post.target_doc = None
+        assert None == await self.client.handle_extras(post)
+
     async def test_handle_sticky_failing(self):
         post = asynctest.MagicMock()
         post.is_known = False
@@ -270,3 +295,44 @@ class ScribbleLiveTargetTests(asynctest.TestCase):
         assert res == False
         assert self.client._check_login.call_count == 0
 
+    async def test_common_put(self):
+        data = {"foo": "bla"}
+        with asynctest.patch("aiohttp.client.ClientSession.put") as patched:
+            patched.return_value = TestResponse(url="http://foo.com", data=data)
+            res = await self.client._put("https://dpa.com/resource", data, 201)
+            assert type(res) == dict
+            assert res == data
+
+            # failing
+            with self.assertRaises(ScribbleLiveException):
+                await self.client._put("https://dpa.com/resource", data, status=404)
+
+    async def test_common_post(self):
+        images = ["tests/test.jpg"]
+        content = "<b>Test</b>"
+        with asynctest.patch("aiohttp.client.ClientSession.post") as patched:
+            patched.return_value = TestResponse(url="http://foo.com",status=201,  data={"content": "data"})
+            # with image
+            res = await self.client._post("https://dpa.com/resource", images=images, status=201)
+            assert type(res) == dict
+            assert res == {"content": "data"}
+            # with content
+            res = await self.client._post("https://dpa.com/resource", content=content, status=201)
+            assert type(res) == dict
+            assert res == {"content": "data"}
+
+            # failing
+            with self.assertRaises(ScribbleLiveException):
+                await self.client._post("https://dpa.com/resource", images=images, content=content, status=404)
+
+    async def test_common_get(self):
+        data = {"foo": "bla"}
+        with asynctest.patch("aiohttp.client.ClientSession.get") as patched:
+            patched.return_value = TestResponse(url="http://foo.com", data=data)
+            res = await self.client._get("https://dpa.com/resource")#, data, 201)
+            assert type(res) == dict
+            assert res == data
+
+            # failing
+            with self.assertRaises(ScribbleLiveException):
+                await self.client._get("https://dpa.com/resource", status=404)
