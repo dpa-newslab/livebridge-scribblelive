@@ -144,8 +144,8 @@ class LiveblogScribbleliveConverterTest(asynctest.TestCase):
                 "html": embed+embed2
             }
         }}
-        content = self.converter._prepare_facebook_embed(item["item"]["meta"]["html"])
-        assert content == embed
+        res = await self.converter._convert_embed(item)
+        assert res == embed
 
     async def test_convert_twitter_embed(self):
         embed = """<div id="_4f1cm9ovf">

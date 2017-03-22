@@ -122,8 +122,8 @@ class LiveblogScribbleliveConverter(BaseConverter):
         meta = item["item"]["meta"]
         if meta.get("html", "").find('class="twitter-tweet"') > -1:
             content = self._prepare_twitter_embed(meta["html"])
-        #elif meta.get("provider_name") == "Facebook":
-        #    content = self._prepare_facebook_embed(meta["html"])
+        elif meta.get("provider_name") == "Facebook":
+            content = self._prepare_facebook_embed(meta["html"])
         elif meta.get("html", "").find('class="instagram-media"') > -1:
             content = self._prepare_instagram_embed(meta["html"])
         elif meta.get("html", "").find("youtube.com") > -1 and meta.get("html", "").find("embedly-embed") > -1:
