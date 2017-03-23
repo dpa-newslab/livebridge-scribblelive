@@ -15,12 +15,11 @@
 # limitations under the License.
 import logging
 from livebridge.base import BaseTarget, TargetResponse
-from livebridge_scribblelive.common import ScribbleLiveClient
+from livebridge_scribblelive.common import ScribbleLiveClient, ScribbleLiveException
+
 
 logger = logging.getLogger(__name__)
 
-class ScribbleLiveException(Exception):
-    pass
 
 class ScribbleLiveTarget(ScribbleLiveClient, BaseTarget):
 
