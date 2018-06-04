@@ -13,10 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import aiohttp
 import bleach
 import logging
 import re
-
+from urllib.parse import urlencode
 from livebridge.base import BaseConverter, ConversionResult
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,20 @@ class LiveblogScribbleliveConverter(BaseConverter):
 
     source = "liveblog"
     target = "scribble"
+
+    async def _get_instagram_embed(self, insta_url):
+        """Resolve embed code via Instagram API."""
+        try:
+            api_url = "https://api.instagram.com/oembed/?{}".format(urlencode({"url": insta_url}))
+            headers = {"Content-Type": "application/json", "Accept": "application/json"}
+            async with aiohttp.ClientSession(conn_timeout=10, headers=headers) as session:
+                async with session.get(api_url) as response:
+                    api_resp = await response.json()
+                    return api_resp.get("html", None)
+        except Exception as exc:
+            logger.error("Fatal error when requesting instagram emebd.")
+            logger.exception(exc)
+        return ""
 
     async def _convert_image_inline(self, item):
         logger.debug("CONVERTING IMAGE INLINE")
@@ -100,7 +115,7 @@ class LiveblogScribbleliveConverter(BaseConverter):
         meta = item["item"]["meta"]
         content = "<blockquote>{}<br>".format(meta.get("quote",""))
         if meta.get("credit"):
-            content += "<br> • <i>{}</i>".format(meta.get("credit", ""))
+            content += "<br> &bull; <i>{}</i>".format(meta.get("credit", ""))
         content += "</blockquote>"
         return content
 
@@ -124,6 +139,9 @@ class LiveblogScribbleliveConverter(BaseConverter):
             content = self._prepare_twitter_embed(meta["html"])
         elif meta.get("provider_name") == "Facebook":
             content = self._prepare_facebook_embed(meta["html"])
+        elif meta.get("provider_name") == "Instagram":
+            insta_embed = await self._get_instagram_embed(meta["original_url"])
+            content = self._prepare_instagram_embed(insta_embed)
         elif meta.get("html", "").find('class="instagram-media"') > -1:
             content = self._prepare_instagram_embed(meta["html"])
         elif meta.get("html", "").find("youtube.com") > -1 and meta.get("html", "").find("embedly-embed") > -1:

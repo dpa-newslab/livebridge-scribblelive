@@ -28,7 +28,7 @@ class LiveblogScribbleliveConverterTest(asynctest.TestCase):
         post = load_json('post_to_convert.json')
         conversion = await self.converter.convert(post)
         assert len(conversion.content) >= 1
-        assert conversion.content == """<p><b>Text</b> mit ein parr <i>Formatierungen</i>. Und einem <a href="http://dpa.de">Link</a>. Und weiterer <s>Text</s>.<br></p><div><img src="http://newslab-liveblog-demo.s3-eu-central-1.amazonaws.com/aa7c892f1b1b7df17f635106e27c55d86a5c5b6144bebe2490f4ce14be671dd7" /><br>Gähn <i>(Mich)</i></div><p>Listen:<br><br><br> • Eins<br> • Zwei<br> • Drei<br><br><br> • u1<br> • u2<br> • u3<br></p><blockquote>Mit dem Wissen wächst der Zweifel.<br><br> • <i>Johann Wolfgang von Goethe</i></blockquote><p>Nochmal <i><b>abschließender</b></i> Text.</p><div id="_nnc0gyzwv">\n     <blockquote class="twitter-tweet">\n         <p>\nNeue Trendsportart? Der Kick auf dem Brett - Drohnen-Surfen! https://t.co/DjyYgHkYJ3 @dpa-NewsBlog | @noz_de\n         </p>&mdash; \n         dpa·live on Twitter (@dpa_live)\n         <a href="https://twitter.com/dpa_live/status/775991579676909568">https://twitter.com/dpa_live/status/775991579676909568</a>\n     </blockquote>\n</div>"""
+        assert conversion.content == """<p><b>Text</b> mit ein parr <i>Formatierungen</i>. Und einem <a href="http://dpa.de">Link</a>. Und weiterer <s>Text</s>.<br></p><div><img src="http://newslab-liveblog-demo.s3-eu-central-1.amazonaws.com/aa7c892f1b1b7df17f635106e27c55d86a5c5b6144bebe2490f4ce14be671dd7" /><br>Gähn <i>(Mich)</i></div><p>Listen:<br><br><br> &bull; Eins<br> &bull; Zwei<br> &bull; Drei<br><br><br> &bull; u1<br> &bull; u2<br> &bull; u3<br></p><blockquote>Mit dem Wissen wächst der Zweifel.<br><br> &bull; <i>Johann Wolfgang von Goethe</i></blockquote><p>Nochmal <i><b>abschließender</b></i> Text.</p><div id="_nnc0gyzwv">\n     <blockquote class="twitter-tweet">\n         <p>\nNeue Trendsportart? Der Kick auf dem Brett - Drohnen-Surfen! https://t.co/DjyYgHkYJ3 @dpa-NewsBlog | @noz_de\n         </p>&mdash; \n         dpa·live on Twitter (@dpa_live)\n         <a href="https://twitter.com/dpa_live/status/775991579676909568">https://twitter.com/dpa_live/status/775991579676909568</a>\n     </blockquote>\n</div>"""
         await self.converter.remove_images(conversion.images)
 
     async def test_simple_conversion_failing(self):
@@ -210,6 +210,29 @@ Bundesliga-Relegation live! Nürnberg vs Frankfurt - die Partie jetzt im LiveTic
         content = await self.converter._convert_embed(item)
         assert content == embed
 
+    async def test_convert_instagram_url(self):
+        start = '<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="'
+        start += 'https://www.instagram.com/p/fA9uwTtkSN/"'
+        end = 'Oct 3, 2013 at 11:19am PDT</time></p></div></blockquote>'
+        item = {"item": {
+            "meta": {
+                "provider_name": "Instagram",
+                "original_url": "http://instagr.am/p/fA9uwTtkSN/",
+            }
+        }}
+        content = await self.converter._convert_embed(item)
+        assert content.startswith(start) == True
+        assert content.endswith(end) == True
+
+    async def test_convert_instagram_url_failing(self):
+        item = {"item": {
+            "meta": {
+                "provider_name": "Instagram",
+                "original_url": ""
+            }
+        }}
+        content = await self.converter._convert_embed(item)
+        assert content == ""
 
     @asynctest.skip("Skipped.")
     async def test_convert_meta_html(self):
@@ -226,7 +249,7 @@ Bundesliga-Relegation live! Nürnberg vs Frankfurt - die Partie jetzt im LiveTic
     async def test_convert_quote(self):
         item = {"item": {"meta": {"quote": "Zitat", "credit": "Urheber"}}}
         res = await self.converter._convert_quote(item)
-        assert res == "<blockquote>Zitat<br><br> • <i>Urheber</i></blockquote>"
+        assert res == "<blockquote>Zitat<br><br> &bull; <i>Urheber</i></blockquote>"
 
     async def test_convert_quote_without_credit(self):
         item = {"item": {"meta": {"quote": "Zitat"}}}
@@ -241,7 +264,7 @@ Bundesliga-Relegation live! Nürnberg vs Frankfurt - die Partie jetzt im LiveTic
             <div><b>bold</b><i>italic</i></div></p>
         """
         res = await self.converter._convert_text({"item":{"text": text}})
-        assert res == """<p><br> • eins<br> • zwei<br>
-            <br> • drei<br> • vier<br>
+        assert res == """<p><br> &bull; eins<br> &bull; zwei<br>
+            <br> &bull; drei<br> &bull; vier<br>
             <s>STRIKE</s>
             <div><b>bold</b><i>italic</i></div></p>"""
