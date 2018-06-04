@@ -148,6 +148,8 @@ class LiveblogScribbleliveConverter(BaseConverter):
             content = meta["html"]
         elif meta.get("html", "").find('youtube.com/embed') > -1:
             content = meta["html"]
+        elif meta.get("html", "").find('<iframe ') > -1:
+            content = meta["html"]
         else:
             pass # positive list
 

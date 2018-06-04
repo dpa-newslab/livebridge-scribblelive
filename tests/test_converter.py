@@ -234,6 +234,21 @@ Bundesliga-Relegation live! Nürnberg vs Frankfurt - die Partie jetzt im LiveTic
         content = await self.converter._convert_embed(item)
         assert content == ""
 
+    async def test_convert_iframe(self):
+        embed = '<div style="width:100%; height:0; position: relative; padding-bottom:56.25%">'
+        embed += '<iframe src="https://www.dpa-video.com/14030646.ihtml/player.html?token=7d663'
+        embed += 'c7bc0e1694c84795b98e79646a0&source=embed&photo%5fid=27705436" style="width:100%; '
+        embed += 'height:100%; position: absolute; top: 0; left: 0;" frameborder="0" border="0" '
+        embed += 'scrolling="no" allowfullscreen="1" mozallowfullscreen="1" webkitallowfullscreen="1" '
+        embed += 'allow="autoplay; fullscreen"></iframe></div>'
+        item = {"item": {
+            "meta": {
+                "html": embed
+            }
+        }}
+        content = await self.converter._convert_embed(item)
+        assert content == embed
+
     @asynctest.skip("Skipped.")
     async def test_convert_meta_html(self):
         item = {"item": {"meta": {"html": "<div>foo</div>"}}}
