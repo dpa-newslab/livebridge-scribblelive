@@ -15,7 +15,7 @@
 # limitations under the License.
 from setuptools import setup, find_packages
 
-version = '0.4.0'
+version = '0.5.0'
 
 setup(name='livebridge-scribblelive',
       version=version,
@@ -27,7 +27,7 @@ See https://github.com/dpa-newslab/livebridge-scribblelive for more infos.
 """,
       classifiers=[
         "Programming Language :: Python :: 3.5",
-        "Topic :: Communications :: Chat", 
+        "Topic :: Communications :: Chat",
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
         "Intended Audience :: Other Audience",
@@ -45,5 +45,5 @@ See https://github.com/dpa-newslab/livebridge-scribblelive for more infos.
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-        "livebridge>=0.21.0"
+        "livebridge>=0.24.0"
       ])
