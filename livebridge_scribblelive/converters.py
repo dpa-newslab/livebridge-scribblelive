@@ -163,6 +163,8 @@ class LiveblogScribbleliveConverter(BaseConverter):
         return content
 
     async def convert(self, post):
+        """ See https://developer.scribblelive.com/accepted-and-stripped-html-tags-posted-via-api/
+            for more infos by SL about supported HTML."""
         content =  ""
         images = []
         try:
