@@ -212,7 +212,7 @@ Bundesliga-Relegation live! Nürnberg vs Frankfurt - die Partie jetzt im LiveTic
 
     async def test_convert_instagram_url(self):
         start = '<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="'
-        start += 'https://www.instagram.com/p/fA9uwTtkSN/"'
+        start += 'https://www.instagram.com/p/fA9uwTtkSN/'
         end = 'Oct 3, 2013 at 11:19am PDT</time></p></div></blockquote>'
         item = {"item": {
             "meta": {

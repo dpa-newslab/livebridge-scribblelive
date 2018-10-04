@@ -23,6 +23,7 @@ from tests import load_json
 
 
 class TestResponse:
+    __test__ = False
 
     def __init__(self, url, data={}, status=200):
         self.status = status
@@ -42,6 +43,7 @@ class TestResponse:
 
 
 class TestPost(BasePost):
+    __test__ = False
     pass
 
 
@@ -58,7 +60,7 @@ class ScribbleLiveTargetTests(asynctest.TestCase):
                         "auth": {"api_key": self.api_key, "user": self.user, "password": self.password},
                         "event_id": self.event_id, "endpoint": self.endpoint, "endpoint_v1": self.endpoint_v1})
 
-    @asynctest.ignore_loop
+    @asynctest.fail_on(unused_loop=False)
     def test_init(self):
         assert self.client.type == "scribble"
         assert self.client.api_key == self.api_key
@@ -71,7 +73,7 @@ class ScribbleLiveTargetTests(asynctest.TestCase):
         assert issubclass(ScribbleLiveTarget, ScribbleLiveClient) == True
         assert isinstance(self.client, BaseTarget) == True
 
-    @asynctest.ignore_loop
+    @asynctest.fail_on(unused_loop=False)
     def test_url_params(self):
         url = self.client._add_url_params("http://test.com/foo?")
         assert url == "http://test.com/foo?Token=baz&format=json"
@@ -83,7 +85,7 @@ class ScribbleLiveTargetTests(asynctest.TestCase):
         url = self.client._add_url_params("http://test.com/foo?baz=bla")
         assert url == "http://test.com/foo?baz=bla&Token=baz&format=json&Auth=foo"
 
-    @asynctest.ignore_loop
+    @asynctest.fail_on(unused_loop=False)
     def test_get_id_target(self):
         post_data = load_json('post_to_convert.json')
 

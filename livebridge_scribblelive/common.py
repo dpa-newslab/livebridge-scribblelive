@@ -75,7 +75,7 @@ class ScribbleLiveClient(object):
 
     async def _get(self, url, *, auth=None, status=200):
         url = self._add_url_params(url)
-        with aiohttp.ClientSession(auth=auth) as session:
+        async with aiohttp.ClientSession(auth=auth) as session:
             async with session.get(url) as resp:
                 if resp.status == status:
                     return await resp.json()
@@ -94,7 +94,7 @@ class ScribbleLiveClient(object):
             data.add_field("content", content)
         elif content:
             data["content"] = content
-        with aiohttp.ClientSession(auth=auth) as session:
+        async with aiohttp.ClientSession(auth=auth) as session:
             async with session.post(url, data=data) as resp:
                 if resp.status == status:
                     return await resp.json()
@@ -106,7 +106,7 @@ class ScribbleLiveClient(object):
         url = self._add_url_params(url)
         data = json.dumps({"ThreadId": int(self.event_id), "Content": content})
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        with aiohttp.ClientSession(auth=auth, headers=headers) as session:
+        async with aiohttp.ClientSession(auth=auth, headers=headers) as session:
             async with session.put(url, data=data) as resp:
                 if resp.status == status:
                     return await resp.json()
