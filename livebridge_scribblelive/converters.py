@@ -152,6 +152,7 @@ class LiveblogScribbleliveConverter(BaseConverter):
             content = meta["html"]
         else:
             pass # positive list
+        # TODO: [\r\n]+ -> " ", strip ^[\r\n ]+ and [\r\n ]+$ 
 
         # add extra text
         if meta.get("title"):
