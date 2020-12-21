@@ -41,6 +41,20 @@ class LiveblogScribbleliveConverter(BaseConverter):
             logger.exception(exc)
         return ""
 
+    async def _get_twitter_embed(self, twitter_url):
+        """Resolve embed code via Twitter API."""
+        try:
+            api_url = "https://publish.twitter.com/oembed?{}".format(urlencode({"url": twitter_url, "dnt" : "1"}))
+            headers = {"Content-Type": "application/json", "Accept": "application/json"}
+            async with aiohttp.ClientSession(conn_timeout=10, headers=headers) as session:
+                async with session.get(api_url) as response:
+                    api_resp = await response.json()
+                    return api_resp.get("html", None)
+        except Exception as exc:
+            logger.error("Fatal error when requesting twitter emebd.")
+            logger.exception(exc)
+        return ""
+
     async def _convert_image_inline(self, item):
         logger.debug("CONVERTING IMAGE INLINE")
         content = ""
@@ -123,8 +137,17 @@ class LiveblogScribbleliveConverter(BaseConverter):
         embed = re.sub(r'<script>.*<\/script>$', '', embed)
         return embed
 
+    def _prepare_youtube_embed(self, meta):
+        template = """
+        <div class="youtube-wrapper-frame"><div style="left: 0; width: 100%; height: 0; position: relative; padding-bottom: 56.25%;"><iframe class="livebridge-iframe" src="https://www.youtube-nocookie.com/embed/{original_id}" style="border: 0; top: 0; left: 0; width: 100%; height: 100%; position: absolute;" allowfullscreen="" scrolling="no" allow="encrypted-media *; accelerometer; clipboard-write; gyroscope; picture-in-picture"></iframe></div></div>
+        """
+        embed = template.format(**meta)
+        logger.debug("Converted Youtube to "+embed)
+        return embed
+
     def _prepare_twitter_embed(self, embed):
-        embed = re.sub(r'<script>[^<]*<\/script>$', '', embed, flags=re.M)
+        embed = re.sub(r'<script[^<]*<\/script>$', '', embed, flags=re.M)
+        logger.debug("Converted Tweet to "+embed)
         return embed.strip()
 
     def _prepare_instagram_embed(self, embed):
@@ -132,11 +155,15 @@ class LiveblogScribbleliveConverter(BaseConverter):
         return embed.strip()
 
     async def _convert_embed(self, item):
-        logger.debug("CONVERTING EMBED")
-        content = ""
+        logger.debug("Converting embed: {item}".format(item=repr(item)))
+
         meta = item["item"]["meta"]
-        if meta.get("html", "").find('class="twitter-tweet"') > -1:
-            content = self._prepare_twitter_embed(meta["html"])
+        provider = meta.get("provider_name", "")
+        if provider == "Twitter":
+            twitter_embed = await self._get_twitter_embed(meta["original_url"])
+            content = self._prepare_twitter_embed(twitter_embed)
+        if provider == "YouTube":
+            content = self._prepare_youtube_embed(meta)
         elif meta.get("provider_name") == "Facebook":
             content = self._prepare_facebook_embed(meta["html"])
         elif meta.get("provider_name") == "Instagram":
@@ -145,21 +172,23 @@ class LiveblogScribbleliveConverter(BaseConverter):
         elif meta.get("html", "").find('class="instagram-media"') > -1:
             content = self._prepare_instagram_embed(meta["html"])
         elif meta.get("html", "").find("youtube.com") > -1 and meta.get("html", "").find("embedly-embed") > -1:
-            content = meta["html"]
+            content = self._prepare_youtube_embed(meta)
         elif meta.get("html", "").find('youtube.com/embed') > -1:
-            content = meta["html"]
+            content = self._prepare_youtube_embed(meta)
         elif meta.get("html", "").find('<iframe ') > -1:
             content = meta["html"]
         else:
             pass # positive list
 
         # add extra text
-        if meta.get("title"):
-            content += "<br><div><strong>{}</strong></div>".format(meta["title"])
-        if meta.get("description"):
-            content += "<p>{}</p>".format(meta["description"])
-        if meta.get("credit"):
-            content += "<div><i>{}</i></div>".format(meta["credit"])
+
+        if provider != "YouTube":
+            if meta.get("title"):
+                content += "<br><div><strong>{}</strong></div>".format(meta["title"])
+            if meta.get("description"):
+                content += "<p>{}</p>".format(meta["description"])
+            if meta.get("credit"):
+                content += "<div><i>{}</i></div>".format(meta["credit"])
         return content
 
     async def convert(self, post):
@@ -173,6 +202,7 @@ class LiveblogScribbleliveConverter(BaseConverter):
                     continue
 
                 for item in g["refs"]:
+                    logger.debug("Converting "+item["item"]["item_type"])
                     if item["item"]["item_type"] == "text":
                         content += await self._convert_text(item)
                     elif item["item"]["item_type"] == "quote":
