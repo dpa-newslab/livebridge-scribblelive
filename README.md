@@ -66,7 +66,9 @@ Run tests with test coverage:
 
 [pytest-cov](https://pypi.python.org/pypi/pytest-cov) has to be installed. In the example above, a html summary of the test coverage is saved in **./htmlcov/**.
 
-## Ideas for extensions:
+## Ideas :
+
+  - remake test skipped in 90a3936a374f5abd6bd0aa1fade018f5c9043f37 
 
   - https://github.com/aio-libs/async-lru could be used to cache oembed responses from Twitter in livebridge_scribblelive/converters.py 
 
