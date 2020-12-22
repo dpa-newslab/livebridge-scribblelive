@@ -10,6 +10,15 @@ It allows to use a Scribblelive event stream as a target for [Livebridge](https:
 
 A converter from Liveblog to Scribblelive is also part of this module.
 
+
+## Updates in 0.6.1
+
+  - YouTube embeds now use nocookie domain
+  - Twutter embeds now use Twitter oembed API to built HTML
+
+
+
+
 ## Installation
 **Python>=3.5** is needed.
 ```sh
